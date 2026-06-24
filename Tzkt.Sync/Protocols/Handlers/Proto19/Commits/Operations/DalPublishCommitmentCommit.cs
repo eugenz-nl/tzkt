@@ -24,7 +24,7 @@ namespace Tzkt.Sync.Protocols.Proto19
                 StorageLimit = content.RequiredInt32("storage_limit"),
                 SenderId = sender.Id,
                 Slot = content.Required("slot_header").RequiredInt32("slot_index"),
-                Commitment = content.Required("slot_header").RequiredString("commitment"),
+                Commitment = GetCommitment(content),
                 Status = result.RequiredString("status") switch
                 {
                     "applied" => OperationStatus.Applied,
@@ -90,5 +90,8 @@ namespace Tzkt.Sync.Protocols.Proto19
             Cache.AppState.ReleaseManagerCounter();
             Cache.AppState.ReleaseOperationId();
         }
+
+        protected virtual string GetCommitment(JsonElement content)
+            => content.Required("slot_header").RequiredString("commitment");
     }
 }
