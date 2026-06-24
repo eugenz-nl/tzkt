@@ -64,7 +64,10 @@
         public int Slot { get; set; }
 
         /// <summary>
-        /// Commitment hash
+        /// Commitment hash. The format depends on the protocol: a Base58-encoded KZG
+        /// commitment (e.g. `sh1...`) up to protocol 25, or, since the Alpha (ZODA) DAL,
+        /// the two 32-byte Merkle roots of the commitment concatenated as a 128-char hex
+        /// string (`row_root` ++ `col_root`; split at 64 chars to recover each root).
         /// </summary>
         public required string Commitment { get; set; }
 
