@@ -14,6 +14,12 @@ namespace Tzkt.Data.Models
 
         public int? ResetDeactivation { get; set; }
 
+        /// <summary>
+        /// Raw DAL attestation bitset (decimal string) for `attestation_with_dal` ops;
+        /// null for plain attestations that carry no DAL content.
+        /// </summary>
+        public string? DalAttestation { get; set; }
+
         #region binary writer
         public static void Write(NpgsqlConnection conn, IEnumerable<AttestationOperation> ops)
         {
@@ -25,6 +31,7 @@ namespace Tzkt.Data.Models
                     "{nameof(Reward)}",
                     "{nameof(Deposit)}",
                     "{nameof(ResetDeactivation)}",
+                    "{nameof(DalAttestation)}",
                     "{nameof(Level)}",
                     "{nameof(Timestamp)}",
                     "{nameof(OpHash)}"
@@ -42,6 +49,7 @@ namespace Tzkt.Data.Models
                 writer.Write(op.Reward, NpgsqlDbType.Bigint);
                 writer.Write(op.Deposit, NpgsqlDbType.Bigint);
                 writer.WriteNullable(op.ResetDeactivation, NpgsqlDbType.Integer);
+                writer.WriteNullable(op.DalAttestation, NpgsqlDbType.Text);
                 writer.Write(op.Level, NpgsqlDbType.Integer);
                 writer.Write(op.Timestamp, NpgsqlDbType.TimestampTz);
                 writer.Write(op.OpHash, NpgsqlDbType.Char);

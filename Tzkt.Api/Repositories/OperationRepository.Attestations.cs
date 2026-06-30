@@ -21,7 +21,7 @@ namespace Tzkt.Api.Repositories
         public async Task<IEnumerable<AttestationOperation>> GetAttestations(string hash, Symbols quote)
         {
             var sql = @"
-                SELECT      o.""Id"", o.""Level"", o.""Timestamp"", o.""DelegateId"", o.""Power"", o.""Reward"", o.""Deposit"", b.""Hash""
+                SELECT      o.""Id"", o.""Level"", o.""Timestamp"", o.""DelegateId"", o.""Power"", o.""Reward"", o.""Deposit"", o.""DalAttestation"", b.""Hash""
                 FROM        ""AttestationOps"" as o
                 INNER JOIN  ""Blocks"" as b 
                         ON  b.""Level"" = o.""Level""
@@ -41,6 +41,7 @@ namespace Tzkt.Api.Repositories
                 Power = row.Power,
                 Rewards = row.Reward,
                 Deposit = row.Deposit,
+                DalAttestation = row.DalAttestation,
                 Quote = Quotes.Get(quote, row.Level)
             });
         }
@@ -48,7 +49,7 @@ namespace Tzkt.Api.Repositories
         public async Task<IEnumerable<AttestationOperation>> GetAttestations(Block block, Symbols quote)
         {
             var sql = @"
-                SELECT      ""Id"", ""Timestamp"", ""OpHash"", ""DelegateId"", ""Power"", ""Reward"", ""Deposit""
+                SELECT      ""Id"", ""Timestamp"", ""OpHash"", ""DelegateId"", ""Power"", ""Reward"", ""Deposit"", ""DalAttestation""
                 FROM        ""AttestationOps""
                 WHERE       ""Level"" = @level
                 ORDER BY    ""Id""";
@@ -67,6 +68,7 @@ namespace Tzkt.Api.Repositories
                 Power = row.Power,
                 Rewards = row.Reward,
                 Deposit = row.Deposit,
+                DalAttestation = row.DalAttestation,
                 Quote = Quotes.Get(quote, block.Level)
             });
         }
@@ -140,6 +142,7 @@ namespace Tzkt.Api.Repositories
                 Power = row.Power,
                 Rewards = row.Reward,
                 Deposit = row.Deposit,
+                DalAttestation = row.DalAttestation,
                 Quote = Quotes.Get(quote, row.Level)
             });
         }
@@ -170,6 +173,7 @@ namespace Tzkt.Api.Repositories
                     case "power": columns.Add(@"o.""Power"""); break;
                     case "rewards": columns.Add(@"o.""Reward"""); break;
                     case "deposit": columns.Add(@"o.""Deposit"""); break;
+                    case "dalAttestation": columns.Add(@"o.""DalAttestation"""); break;
                     case "block":
                         columns.Add(@"b.""Hash""");
                         joins.Add(@"INNER JOIN ""Blocks"" as b ON b.""Level"" = o.""Level""");
@@ -235,6 +239,10 @@ namespace Tzkt.Api.Repositories
                         foreach (var row in rows)
                             result[j++][i] = row.Deposit;
                         break;
+                    case "dalAttestation":
+                        foreach (var row in rows)
+                            result[j++][i] = row.DalAttestation;
+                        break;
                     case "quote":
                         foreach (var row in rows)
                             result[j++][i] = Quotes.Get(quote, row.Level);
@@ -269,6 +277,7 @@ namespace Tzkt.Api.Repositories
                 case "power": columns.Add(@"o.""Power"""); break;
                 case "rewards": columns.Add(@"o.""Reward"""); break;
                 case "deposit": columns.Add(@"o.""Deposit"""); break;
+                case "dalAttestation": columns.Add(@"o.""DalAttestation"""); break;
                 case "block":
                     columns.Add(@"b.""Hash""");
                     joins.Add(@"INNER JOIN ""Blocks"" as b ON b.""Level"" = o.""Level""");
@@ -330,6 +339,10 @@ namespace Tzkt.Api.Repositories
                 case "deposit":
                     foreach (var row in rows)
                         result[j++] = row.Deposit;
+                    break;
+                case "dalAttestation":
+                    foreach (var row in rows)
+                        result[j++] = row.DalAttestation;
                     break;
                 case "quote":
                     foreach (var row in rows)
