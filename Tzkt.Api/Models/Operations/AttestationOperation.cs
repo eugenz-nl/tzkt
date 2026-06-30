@@ -54,6 +54,13 @@
         /// </summary>
         public long Rewards { get; set; }
 
+        /// <summary>
+        /// Raw DAL attestation bitset (decimal string) for `attestation_with_dal` operations,
+        /// or `null` if the attestation carries no DAL content. Decode against the L1 RPC
+        /// (`helpers/decode_dal_attestation`) at the operation's level to obtain attested slots.
+        /// </summary>
+        public string? DalAttestation { get; set; }
+
         #region injecting
         /// <summary>
         /// Injected historical quote at the time of operation

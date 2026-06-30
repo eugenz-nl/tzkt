@@ -681,6 +681,9 @@ namespace Tzkt.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<string>("DalAttestation")
+                        .HasColumnType("text");
+
                     b.Property<int>("DelegateId")
                         .HasColumnType("integer");
 

@@ -8,10 +8,12 @@ namespace Tzkt.Sync.Protocols.Proto12
         public Task Apply(Block block, JsonElement op, JsonElement content)
         {
             var metadata = content.Required("metadata");
-            return Apply(block, op.RequiredString("hash"), metadata.RequiredString("delegate"), GetPower(metadata));
+            // `dal_attestation` (decimal-string bitset) is present only on `attestation_with_dal`
+            // ops, at the content top-level; plain attestations carry no DAL content.
+            return Apply(block, op.RequiredString("hash"), metadata.RequiredString("delegate"), GetPower(metadata), content.OptionalString("dal_attestation"));
         }
 
-        public async Task Apply(Block block, string opHash, string bakerAddress, long power)
+        public async Task Apply(Block block, string opHash, string bakerAddress, long power, string? dalAttestation = null)
         {
             var baker = Cache.Accounts.GetExistingDelegate(bakerAddress);
 
@@ -22,7 +24,8 @@ namespace Tzkt.Sync.Protocols.Proto12
                 Timestamp = block.Timestamp,
                 OpHash = opHash,
                 Power = power,
-                DelegateId = baker.Id
+                DelegateId = baker.Id,
+                DalAttestation = dalAttestation
             };
 
             Db.TryAttach(baker);
