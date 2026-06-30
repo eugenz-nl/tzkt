@@ -381,35 +381,6 @@
         /// **DEPRECATED**
         /// </summary>
         public int AIToggleEma => 0;
-        /// <summary>
-        /// **DEPRECATED**
-        /// </summary>
-        public IEnumerable<UpdateSecondaryKeyOperation>? UpdateConsensusKeyOps => UpdateSecondaryKeyOps;
-
-        /// <summary>
-        /// **DEPRECATED**
-        /// </summary>
-        public IEnumerable<AttestationOperation>? Endorsements => Attestations;
-
-        /// <summary>
-        /// **DEPRECATED**
-        /// </summary>
-        public IEnumerable<PreattestationOperation>? Preendorsements => Preattestations;
-
-        /// <summary>
-        /// **DEPRECATED**
-        /// </summary>
-        public IEnumerable<DoubleConsensusOperation>? DoubleEndorsing => DoubleConsensus;
-
-        /// <summary>
-        /// **DEPRECATED**
-        /// </summary>
-        public IEnumerable<DoubleConsensusOperation>? DoublePreendorsing => [];
-
-        /// <summary>
-        /// **DEPRECATED**
-        /// </summary>
-        public IEnumerable<AttestationRewardOperation>? EndorsingRewards => AttestationRewards;
         #endregion
     }
 }
