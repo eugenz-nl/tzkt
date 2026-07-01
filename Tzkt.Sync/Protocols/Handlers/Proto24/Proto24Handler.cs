@@ -69,8 +69,8 @@ namespace Tzkt.Sync.Protocols
                             break;
                         case "attestations_aggregate":
                             var attestations = new AttestationAggregateCommit(this).ExtractAttestations(operation, content);
-                            foreach (var (opHash, baker, power) in attestations)
-                                await new AttestationsCommit(this).Apply(blockCommit.Block, opHash, baker, power);
+                            foreach (var (opHash, baker, power, dalAttestation) in attestations)
+                                await new AttestationsCommit(this).Apply(blockCommit.Block, opHash, baker, power, dalAttestation);
                             break;
                         case "preattestation":
                         case "preattestation_with_dal":
