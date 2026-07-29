@@ -10,6 +10,7 @@ using Netezos.Rpc;
 using Tzkt.Data;
 using Tzkt.Sync.Services;
 using Tzkt.Sync.Tests.Database;
+using Tzkt.Sync.Tests.Helpers;
 
 namespace Tzkt.Sync.Tests
 {
@@ -64,6 +65,9 @@ namespace Tzkt.Sync.Tests
 
             try
             {
+                logger.LogInformation("Run PublicKeysTests");
+                PublicKeysTests.Run();
+
                 InitDb(app);
 
                 if (config.RunIndexer)

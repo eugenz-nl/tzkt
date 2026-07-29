@@ -1,5 +1,4 @@
 ﻿using Dynamic.Json;
-using Netezos.Keys;
 
 namespace Tzkt.Sync.Protocols
 {
@@ -104,12 +103,12 @@ namespace Tzkt.Sync.Protocols
             {
                 if (state.support.elements[i] is DJsonValue)
                 {
-                    if (PubKey.FromBase58(state.support.elements[i]).Address != proto.Cache.Accounts.GetDelegate(Bakers[i]).Address)
+                    if (PublicKeys.GetPublicKeyHash(state.support.elements[i]) != proto.Cache.Accounts.GetDelegate(Bakers[i]).Address)
                         throw new Exception("Invalid sampler 'support' element");
                 }
                 else if (state.support.elements[i].@delegate == null)
                 {
-                    if (PubKey.FromBase58(state.support.elements[i].consensus_pk).Address != proto.Cache.Accounts.GetDelegate(Bakers[i]).Address)
+                    if (PublicKeys.GetPublicKeyHash(state.support.elements[i].consensus_pk) != proto.Cache.Accounts.GetDelegate(Bakers[i]).Address)
                         throw new Exception("Invalid sampler 'support' element");
                 }
                 else

@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Netezos.Contracts;
 using Netezos.Encoding;
-using Netezos.Keys;
 using Newtonsoft.Json.Linq;
 using Tzkt.Data.Models;
 
@@ -56,7 +55,7 @@ namespace Tzkt.Sync.Protocols.Proto1
             #region bootstrap bakers
             foreach (var (pubKey, balance, _) in bootstrapAccounts.Where(x => x.Item1[0] != 't' && (x.Item3 == null || x.Item3[0] != 't')))
             {
-                var address = PubKey.FromBase58(pubKey).Address;
+                var address = PublicKeys.GetPublicKeyHash(pubKey);
                 if (Cache.Accounts.TryGetCached(address, out var acc))
                 {
                     Receive(acc, acc as Data.Models.Delegate, balance);
@@ -88,7 +87,7 @@ namespace Tzkt.Sync.Protocols.Proto1
             {
                 var delegat = Cache.Accounts.GetExistingDelegate(delegateTo!);
 
-                var address = PubKey.FromBase58(pubKey).Address;
+                var address = PublicKeys.GetPublicKeyHash(pubKey);
                 if (Cache.Accounts.TryGetCached(address, out var acc))
                 {
                     Receive(acc, delegat, balance);
