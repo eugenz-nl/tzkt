@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using Netezos.Keys;
 using Tzkt.Data.Models;
 using Tzkt.Data.Models.Base;
 
@@ -14,7 +13,7 @@ namespace Tzkt.Sync.Protocols.Proto15
             var sender = await Cache.Accounts.GetExistingAsync(content.RequiredString("source"));
 
             var pubKey = content.RequiredString("pk");
-            var pubKeyHash = PubKey.FromBase58(pubKey).Address;
+            var pubKeyHash = PublicKeys.GetPublicKeyHash(pubKey);
             var result = content.Required("metadata").Required("operation_result");
             var operation = new UpdateSecondaryKeyOperation
             {
