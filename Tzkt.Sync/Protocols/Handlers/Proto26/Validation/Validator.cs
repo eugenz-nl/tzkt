@@ -161,9 +161,11 @@ namespace Tzkt.Sync.Protocols.Proto26
                             case "attestation": ValidateAttestation(content); break;
                             case "attestation_with_dal": ValidateAttestation(content); break;
                             case "attestations_aggregate": ValidateAttestationsAggregate(content); break;
+                            case "xmss_attestations_aggregate": ValidateAttestationsAggregate(content); break;
                             case "preattestation": ValidatePreattestation(content); break;
                             case "preattestation_with_dal": ValidatePreattestation(content); break;
                             case "preattestations_aggregate": ValidatePreattestationsAggregate(content); break;
+                            case "xmss_preattestations_aggregate": ValidatePreattestationsAggregate(content); break;
                             case "ballot": await ValidateBallot(content); break;
                             case "proposals": ValidateProposal(content); break;
                             case "activate_account": await ValidateActivation(content); break; 

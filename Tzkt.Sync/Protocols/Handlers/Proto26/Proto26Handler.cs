@@ -68,6 +68,7 @@ namespace Tzkt.Sync.Protocols
                             await new AttestationsCommit(this).Apply(blockCommit.Block, operation, content);
                             break;
                         case "attestations_aggregate":
+                        case "xmss_attestations_aggregate":
                             var attestations = new AttestationAggregateCommit(this).ExtractAttestations(operation, content);
                             foreach (var (opHash, baker, power, dalAttestation) in attestations)
                                 await new AttestationsCommit(this).Apply(blockCommit.Block, opHash, baker, power, dalAttestation);
@@ -77,6 +78,7 @@ namespace Tzkt.Sync.Protocols
                             new PreattestationsCommit(this).Apply(blockCommit.Block, operation, content);
                             break;
                         case "preattestations_aggregate":
+                        case "xmss_preattestations_aggregate":
                             var preattestations = new PreattestationAggregateCommit(this).ExtractPreattestations(operation, content);
                             foreach (var (opHash, baker, power) in preattestations)
                                 new PreattestationsCommit(this).Apply(blockCommit.Block, opHash, baker, power);
