@@ -150,6 +150,25 @@ namespace Tzkt.Sync.Protocols
             return res;
         }
 
+        public static IEnumerable<BR> GetBakingRights(SwrrSampler sampler, Protocol protocol, Cycle cycle)
+        {
+            var rounds = BakingRight.MaxRound + 1;
+            var res = new List<BR>(protocol.BlocksPerCycle * rounds);
+            for (int position = 0; position < protocol.BlocksPerCycle; position++)
+                for (int round = 0; round < rounds; round++)
+                    res.Add(new() { Level = cycle.FirstLevel + position, Round = round, Baker = sampler.GetBaker(position, round) });
+            return res;
+        }
+
+        public static IEnumerable<BR> GetBakingRights(SwrrSampler sampler, Cycle cycle, int level, int rounds = BakingRight.MaxRound + 1)
+        {
+            var position = level - cycle.FirstLevel;
+            var res = new List<BR>(rounds);
+            for (int round = 0; round < rounds; round++)
+                res.Add(new() { Level = level, Round = round, Baker = sampler.GetBaker(position, round) });
+            return res;
+        }
+
         public static IEnumerable<AR> GetAttestationRights(Sampler sampler, Protocol protocol, Cycle cycle, int level)
         {
             var generator = new RightsGenerator(sampler, cycle.Seed);

@@ -68,6 +68,9 @@ namespace Tzkt.Sync.Tests
                 logger.LogInformation("Run PublicKeysTests");
                 PublicKeysTests.Run();
 
+                logger.LogInformation("Run SwrrSamplerTests");
+                SwrrSamplerTests.Run();
+
                 InitDb(app);
 
                 if (config.RunIndexer)
