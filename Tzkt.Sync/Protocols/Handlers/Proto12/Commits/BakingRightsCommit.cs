@@ -33,14 +33,7 @@ namespace Tzkt.Sync.Protocols.Proto12
             if (maxExistedRound < block.BlockRound)
             {
                 var cycle = await Db.Cycles.FirstAsync(x => x.Index == block.Cycle);
-                var bakerCycles = await Cache.BakerCycles.GetAsync(block.Cycle);
-                var sampler = GetSampler(
-                    bakerCycles.Values.Where(x => x.BakingPower > 0).Select(x => (x.BakerId, x.BakingPower)),
-                    block.ProtoCode > 1 && block.Cycle <= Context.Protocol.FirstCycle + Context.Protocol.ConsensusRightsDelay); //TODO: remove this crutch after ithaca is gone
-                #region temporary diagnostics
-                await sampler.Validate(Proto, block.Level, block.Cycle);
-                #endregion
-                var bakingRights = RightsGenerator.GetBakingRights(sampler, cycle, block.Level, block.BlockRound + 1);
+                var bakingRights = await GetCurrentBakingRights(block, cycle);
 
                 var sqlInsert = @"
                     INSERT INTO ""BakingRights"" (""Cycle"", ""Level"", ""BakerId"", ""Type"", ""Status"", ""Round"", ""Slots"") VALUES ";
@@ -108,16 +101,7 @@ namespace Tzkt.Sync.Protocols.Proto12
 
         protected virtual async Task ApplyNewCycle(Block block, Cycle futureCycle, Dictionary<int, long> selectedStakes)
         {
-            var sampler = GetSampler(
-                selectedStakes.Where(x => x.Value > 0).Select(x => (x.Key, x.Value)),
-                block.Level == Context.Protocol.FirstCycleLevel);
-
-            #region temporary diagnostics
-            await sampler.Validate(Proto, block.Level, futureCycle.Index);
-            #endregion
-
-            FutureBakingRights = await RightsGenerator.GetBakingRightsAsync(sampler, Context.Protocol, futureCycle);
-            FutureAttestationRights = await RightsGenerator.GetAttestationRightsAsync(sampler, Context.Protocol, futureCycle);
+            (FutureBakingRights, FutureAttestationRights) = await GetFutureRights(block, futureCycle, selectedStakes);
 
             var conn = (Db.Database.GetDbConnection() as NpgsqlConnection)!;
             using var writer = conn.BeginBinaryImport(@"
@@ -183,6 +167,35 @@ namespace Tzkt.Sync.Protocols.Proto12
                 block.Cycle + Context.Protocol.ConsensusRightsDelay,
                 (int)BakingRightType.Baking,
                 Context.Protocol.GetCycleStart(block.Cycle + Context.Protocol.ConsensusRightsDelay));
+        }
+
+        protected virtual async Task<IEnumerable<RightsGenerator.BR>> GetCurrentBakingRights(Block block, Cycle cycle)
+        {
+            var bakerCycles = await Cache.BakerCycles.GetAsync(block.Cycle);
+            var sampler = GetSampler(
+                bakerCycles.Values.Where(x => x.BakingPower > 0).Select(x => (x.BakerId, x.BakingPower)),
+                block.ProtoCode > 1 && block.Cycle <= Context.Protocol.FirstCycle + Context.Protocol.ConsensusRightsDelay); //TODO: remove this crutch after ithaca is gone
+
+            #region temporary diagnostics
+            await sampler.Validate(Proto, block.Level, block.Cycle);
+            #endregion
+
+            return RightsGenerator.GetBakingRights(sampler, cycle, block.Level, block.BlockRound + 1);
+        }
+
+        protected virtual async Task<(IEnumerable<RightsGenerator.BR>, IEnumerable<RightsGenerator.AR>)> GetFutureRights(Block block, Cycle futureCycle, Dictionary<int, long> selectedStakes)
+        {
+            var sampler = GetSampler(
+                selectedStakes.Where(x => x.Value > 0).Select(x => (x.Key, x.Value)),
+                block.Level == Context.Protocol.FirstCycleLevel);
+
+            #region temporary diagnostics
+            await sampler.Validate(Proto, block.Level, futureCycle.Index);
+            #endregion
+
+            return (
+                await RightsGenerator.GetBakingRightsAsync(sampler, Context.Protocol, futureCycle),
+                await RightsGenerator.GetAttestationRightsAsync(sampler, Context.Protocol, futureCycle));
         }
 
         protected virtual Sampler GetSampler(IEnumerable<(int id, long stake)> selection, bool forceBase)
