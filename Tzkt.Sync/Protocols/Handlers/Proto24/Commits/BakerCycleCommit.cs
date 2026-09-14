@@ -17,7 +17,7 @@ namespace Tzkt.Sync.Protocols.Proto24
                     foreach (var bakerCycle in bakerCycles.Values)
                     {
                         Db.TryAttach(bakerCycle);
-                        bakerCycle.FutureAttestationRewards = GetFutureAttestationRewards(Context.Protocol, cycle, bakerCycle.BakingPower);
+                        bakerCycle.FutureAttestationRewards = GetFutureAttestationRewards(Context.Protocol, cycle, bakerCycle);
                     }
                 }
             }
@@ -39,18 +39,18 @@ namespace Tzkt.Sync.Protocols.Proto24
                     foreach (var bakerCycle in bakerCycles.Values)
                     {
                         Db.TryAttach(bakerCycle);
-                        bakerCycle.FutureAttestationRewards = base.GetFutureAttestationRewards(Context.Protocol, cycle, bakerCycle.BakingPower);
+                        bakerCycle.FutureAttestationRewards = base.GetFutureAttestationRewards(Context.Protocol, cycle, bakerCycle);
                     }
                 }
             }
         }
 
-        protected override long GetFutureAttestationRewards(Protocol protocol, Cycle cycle, long bakingPower)
+        protected override long GetFutureAttestationRewards(Protocol protocol, Cycle cycle, BakerCycle bakerCycle)
         {
             if (Cache.AppState.Get().AbaActivationLevel is not null)
-                return (protocol.BlocksPerCycle * cycle.AttestationRewardPerBlock).MulRatioUp(bakingPower, cycle.TotalBakingPower);
+                return (protocol.BlocksPerCycle * cycle.AttestationRewardPerBlock).MulRatioUp(bakerCycle.BakingPower, cycle.TotalBakingPower);
 
-            return base.GetFutureAttestationRewards(protocol, cycle, bakingPower);
+            return base.GetFutureAttestationRewards(protocol, cycle, bakerCycle);
         }
     }
 }
