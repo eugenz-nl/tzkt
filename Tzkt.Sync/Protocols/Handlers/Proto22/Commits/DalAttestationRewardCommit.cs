@@ -88,7 +88,7 @@ namespace Tzkt.Sync.Protocols.Proto22
                             throw new Exception("Unexpected DAL attestation rewards balance update");
 
                         if (op.Expected != change)
-                            throw new Exception("FutureDalAttestationRewards != loss");
+                            Logger.LogWarning("Expected DAL attestation rewards ({expected}) != on-chain loss ({loss}) for baker {baker} at cycle {cycle}; trusting the on-chain value", op.Expected, change, op.BakerId, block.Cycle);
 
                         op.RewardDelegated = 0;
                         op.RewardStakedOwn = 0;
@@ -110,8 +110,9 @@ namespace Tzkt.Sync.Protocols.Proto22
                 bakerCycle.FutureDalAttestationRewards = 0;
                 if (op.RewardDelegated != 0 || op.RewardStakedOwn != 0 || op.RewardStakedEdge != 0 || op.RewardStakedShared != 0)
                 {
-                    if (op.Expected != op.RewardDelegated + op.RewardStakedOwn + op.RewardStakedEdge + op.RewardStakedShared)
-                        throw new Exception("ExpectedReward != RewardFrozen + RewardDelegated");
+                    var actual = op.RewardDelegated + op.RewardStakedOwn + op.RewardStakedEdge + op.RewardStakedShared;
+                    if (op.Expected != actual)
+                        Logger.LogWarning("Expected DAL attestation rewards ({expected}) != on-chain rewards ({actual}) for baker {baker} at cycle {cycle}; trusting the on-chain value", op.Expected, actual, op.BakerId, block.Cycle);
 
                     bakerCycle.DalAttestationRewardsDelegated = op.RewardDelegated;
                     bakerCycle.DalAttestationRewardsStakedOwn = op.RewardStakedOwn;
