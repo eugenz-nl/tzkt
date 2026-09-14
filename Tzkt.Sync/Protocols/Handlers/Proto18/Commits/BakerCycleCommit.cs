@@ -166,9 +166,10 @@ namespace Tzkt.Sync.Protocols.Proto18
                     bakerCycle.BakingPower = bakingPower;
                     bakerCycle.ExpectedBlocks = Context.Protocol.BlocksPerCycle.MulRatio(bakingPower, futureCycle.TotalBakingPower);
                     bakerCycle.ExpectedAttestations = expectedAttestations;
-                    bakerCycle.FutureAttestationRewards = GetFutureAttestationRewards(Context.Protocol, futureCycle, bakingPower);
                     bakerCycle.ExpectedDalAttestations = expectedDalAttestations;
                     bakerCycle.FutureDalAttestationRewards = expectedDalAttestations * futureCycle.DalAttestationRewardPerShard;
+                    // FutureAttestationRewards is set below, once FutureAttestations (the baker's
+                    // actual assigned slots for the cycle) has been accumulated from the drawn rights.
                 }
                 return bakerCycle;
             });
@@ -207,6 +208,15 @@ namespace Tzkt.Sync.Protocols.Proto18
                     bakerCycle.FutureAttestations += ar.Slots!.Value;
                 }
             }
+            #endregion
+
+            #region future attestation rewards
+            // Derive the expected attestation reward from the baker's actual assigned slots
+            // (FutureAttestations) rather than a stake-ratio estimate, so it matches what the
+            // protocol actually pays out at cycle end and the reward reconciliation holds.
+            foreach (var bakerCycle in bakerCycles.Values)
+                if (bakerCycle.BakingPower > 0)
+                    bakerCycle.FutureAttestationRewards = GetFutureAttestationRewards(Context.Protocol, futureCycle, bakerCycle);
             #endregion
 
             Db.BakerCycles.AddRange(bakerCycles.Values);
@@ -348,11 +358,10 @@ namespace Tzkt.Sync.Protocols.Proto18
                 """, block.Cycle + Context.Protocol.ConsensusRightsDelay);
         }
 
-        protected virtual long GetFutureAttestationRewards(Protocol protocol, Cycle cycle, long bakingPower)
+        protected virtual long GetFutureAttestationRewards(Protocol protocol, Cycle cycle, BakerCycle bakerCycle)
         {
-            var expectedAttestations = (protocol.BlocksPerCycle * protocol.AttestersPerBlock).MulRatio(bakingPower, cycle.TotalBakingPower);
-            var attestationRewardPerSlot = cycle.AttestationRewardPerBlock / Context.Protocol.AttestersPerBlock;
-            return expectedAttestations * attestationRewardPerSlot;
+            var attestationRewardPerSlot = cycle.AttestationRewardPerBlock / protocol.AttestersPerBlock;
+            return bakerCycle.FutureAttestations * attestationRewardPerSlot;
         }
     }
 }

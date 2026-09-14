@@ -110,9 +110,10 @@ namespace Tzkt.Sync.Protocols.Proto18
                         bakerCycle.BakingPower = x.BakingPower;
                         bakerCycle.ExpectedBlocks = protocol.BlocksPerCycle.MulRatio(x.BakingPower, cycle.TotalBakingPower);
                         bakerCycle.ExpectedAttestations = expectedAttestations;
-                        bakerCycle.FutureAttestationRewards = expectedAttestations * attestationRewardPerSlot;
                         bakerCycle.ExpectedDalAttestations = expectedDalAttestations;
                         bakerCycle.FutureDalAttestationRewards = expectedDalAttestations * cycle.DalAttestationRewardPerShard;
+                        // FutureAttestationRewards is set below, once FutureAttestations (the baker's
+                        // actual assigned slots for the cycle) has been accumulated from the drawn rights.
                     }
                     return bakerCycle;
                 });
@@ -149,6 +150,15 @@ namespace Tzkt.Sync.Protocols.Proto18
                         bakerCycle.FutureAttestations += ar.Slots;
                     }
                 }
+                #endregion
+
+                #region future attestation rewards
+                // Derive the expected attestation reward from the baker's actual assigned slots
+                // (FutureAttestations) rather than a stake-ratio estimate, so it matches what the
+                // protocol actually pays out at cycle end and the reward reconciliation holds.
+                foreach (var bakerCycle in bakerCycles.Values)
+                    if (bakerCycle.BakingPower != 0)
+                        bakerCycle.FutureAttestationRewards = bakerCycle.FutureAttestations * attestationRewardPerSlot;
                 #endregion
 
                 Db.BakerCycles.AddRange(bakerCycles.Values);
