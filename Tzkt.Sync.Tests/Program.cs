@@ -71,6 +71,9 @@ namespace Tzkt.Sync.Tests
                 logger.LogInformation("Run SwrrSamplerTests");
                 SwrrSamplerTests.Run();
 
+                logger.LogInformation("Run PqMichelsonTests");
+                PqMichelsonTests.Run();
+
                 InitDb(app);
 
                 if (config.RunIndexer)
