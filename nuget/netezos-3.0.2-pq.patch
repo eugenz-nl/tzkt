@@ -1,0 +1,158 @@
+diff --git a/Netezos/Contracts/Schemas/AddressSchema.cs b/Netezos/Contracts/Schemas/AddressSchema.cs
+index 0123978..b063dbb 100644
+--- a/Netezos/Contracts/Schemas/AddressSchema.cs
++++ b/Netezos/Contracts/Schemas/AddressSchema.cs
+@@ -34,6 +34,10 @@ namespace Netezos.Contracts
+                         prefix = Prefixes.tz3;
+                     else if (micheBytes.Value[1] == 3)
+                         prefix = Prefixes.tz4;
++                    else if (micheBytes.Value[1] == 4)
++                        prefix = Prefixes.tz5;
++                    else if (micheBytes.Value[1] == 5)
++                        prefix = Prefixes.tz6;
+                     else
+                         return Hex.Convert(micheBytes.Value);
+                 }
+@@ -141,6 +145,16 @@ namespace Netezos.Contracts
+                     res[0] = 0;
+                     res[1] = 3;
+                     break;
++                case "tz5":
++                    addressBytes.CopyTo(res, 2);
++                    res[0] = 0;
++                    res[1] = 4;
++                    break;
++                case "tz6":
++                    addressBytes.CopyTo(res, 2);
++                    res[0] = 0;
++                    res[1] = 5;
++                    break;
+                 case "KT1":
+                     addressBytes.CopyTo(res, 1);
+                     res[0] = 1;
+diff --git a/Netezos/Contracts/Schemas/ContractSchema.cs b/Netezos/Contracts/Schemas/ContractSchema.cs
+index f049560..0e8781f 100644
+--- a/Netezos/Contracts/Schemas/ContractSchema.cs
++++ b/Netezos/Contracts/Schemas/ContractSchema.cs
+@@ -44,6 +44,10 @@ namespace Netezos.Contracts
+                         prefix = Prefixes.tz3;
+                     else if (micheBytes.Value[1] == 3)
+                         prefix = Prefixes.tz4;
++                    else if (micheBytes.Value[1] == 4)
++                        prefix = Prefixes.tz5;
++                    else if (micheBytes.Value[1] == 5)
++                        prefix = Prefixes.tz6;
+                     else
+                         return Hex.Convert(micheBytes.Value);
+                 }
+@@ -156,6 +160,16 @@ namespace Netezos.Contracts
+                     res[0] = 0;
+                     res[1] = 3;
+                     break;
++                case "tz5":
++                    addressBytes.CopyTo(res, 2);
++                    res[0] = 0;
++                    res[1] = 4;
++                    break;
++                case "tz6":
++                    addressBytes.CopyTo(res, 2);
++                    res[0] = 0;
++                    res[1] = 5;
++                    break;
+                 case "KT1":
+                     addressBytes.CopyTo(res, 1);
+                     res[0] = 1;
+diff --git a/Netezos/Contracts/Schemas/KeyHashSchema.cs b/Netezos/Contracts/Schemas/KeyHashSchema.cs
+index d49efb5..b66795b 100644
+--- a/Netezos/Contracts/Schemas/KeyHashSchema.cs
++++ b/Netezos/Contracts/Schemas/KeyHashSchema.cs
+@@ -29,6 +29,8 @@ namespace Netezos.Contracts
+                     1 => Prefixes.tz2,
+                     2 => Prefixes.tz3,
+                     3 => Prefixes.tz4,
++                    4 => Prefixes.tz5,
++                    5 => Prefixes.tz6,
+                     _ => null
+                 };
+ 
+@@ -68,6 +70,8 @@ namespace Netezos.Contracts
+                     "tz2" => 1,
+                     "tz3" => 2,
+                     "tz4" => 3,
++                    "tz5" => 4,
++                    "tz6" => 5,
+                     _ => throw FormatException(value)
+                 };
+ 
+diff --git a/Netezos/Contracts/Schemas/KeySchema.cs b/Netezos/Contracts/Schemas/KeySchema.cs
+index 33c75ba..4a7a0fb 100644
+--- a/Netezos/Contracts/Schemas/KeySchema.cs
++++ b/Netezos/Contracts/Schemas/KeySchema.cs
+@@ -26,6 +26,9 @@ namespace Netezos.Contracts
+                     (1, 34) => Prefixes.sppk,
+                     (2, 34) => Prefixes.p2pk,
+                     (3, 49) => Prefixes.BLpk,
++                    (4, 1313) => Prefixes.mdpk,
++                    (5, 32) => Prefixes.xmpk31,
++                    (5, 33) => Prefixes.xmpk,
+                     _ => null
+                 };
+ 
+@@ -77,6 +80,14 @@ namespace Netezos.Contracts
+                         res = new byte[49];
+                         res[0] = 3;
+                         break;
++                    case "mdpk":
++                        res = new byte[1313];
++                        res[0] = 4;
++                        break;
++                    case "xmpk":
++                        res = new byte[1 + bytes.Length];
++                        res[0] = 5;
++                        break;
+                     default:
+                         throw FormatException(value);
+                 }
+diff --git a/Netezos/Utils/Prefixes.cs b/Netezos/Utils/Prefixes.cs
+index fdecf04..2816646 100644
+--- a/Netezos/Utils/Prefixes.cs
++++ b/Netezos/Utils/Prefixes.cs
+@@ -52,6 +52,16 @@
+         /// </summary>
+         public static readonly byte[] tz4 = [6, 161, 166];
+ 
++        /// <summary>
++        /// Address prefix for ML-DSA-44
++        /// </summary>
++        public static readonly byte[] tz5 = [6, 161, 169];
++
++        /// <summary>
++        /// Address prefix for XMSS
++        /// </summary>
++        public static readonly byte[] tz6 = [6, 161, 171];
++
+         /// <summary>
+         /// Address prefix for originated contract
+         /// </summary>
+@@ -97,6 +107,21 @@
+         /// </summary>
+         public static readonly byte[] BLpk = [6, 149, 135, 204];
+ 
++        /// <summary>
++        /// Public key prefix for ML-DSA-44
++        /// </summary>
++        public static readonly byte[] mdpk = [13, 7, 237, 67];
++
++        /// <summary>
++        /// Public key prefix for XMSS (32-byte keys)
++        /// </summary>
++        public static readonly byte[] xmpk = [19, 90, 92, 13];
++
++        /// <summary>
++        /// Public key prefix for legacy XMSS (31-byte keys)
++        /// </summary>
++        public static readonly byte[] xmpk31 = [1, 121, 6, 180];
++
+         /// <summary>
+         /// Private key prefix for Ed25519 (tz1)
+         /// </summary>
