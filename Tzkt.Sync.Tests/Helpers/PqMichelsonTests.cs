@@ -43,6 +43,19 @@ namespace Tzkt.Sync.Tests.Helpers
             RoundTrip("""{"prim":"key_hash"}""", Tz6, "05");
             RoundTrip("""{"prim":"key"}""", Xmpk, "05");
             RoundTrip("""{"prim":"key"}""", Base58.Convert(new byte[1312], Prefixes.mdpk), "04");
+
+            // TzKT's own decoder, used e.g. by TokensCommit to parse FA transfer params (block 179839)
+            ParseAddress(Tz5, "0004");
+            ParseAddress(Tz6, "0005");
+        }
+
+        static void ParseAddress(string address, string tag)
+        {
+            var bytes = new MichelineBytes(Hex.Parse(tag + Hex.Convert(Base58.Parse(address, 3))));
+            if (bytes.ParseAddress() != address)
+                throw new Exception($"Invalid ParseAddress result for {address}: {bytes.ParseAddress()}");
+            if (!bytes.TryParseAddress(out var res) || res != address)
+                throw new Exception($"Invalid TryParseAddress result for {address}: {res}");
         }
 
         static void RoundTrip(string type, string value, string tag)
