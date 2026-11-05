@@ -133,6 +133,13 @@ namespace Tzkt.Sync.Protocols.Proto12
             }
 
             writer.Complete();
+
+            // The rows above bypass the cache and get fresh Ids. When the cache window already
+            // spans the future cycle (short cycles, e.g. 100-level test networks), it would keep
+            // stale rights from before a revert of this block; the status UPDATEs (matched by Id)
+            // would then silently miss for the whole cycle and a later revert would hit
+            // "Unexpected future rights". Drop the cache so it reloads from the DB.
+            Cache.BakingRights.Reset();
         }
 
         public virtual async Task Revert(Block block)
@@ -167,6 +174,9 @@ namespace Tzkt.Sync.Protocols.Proto12
                 block.Cycle + Context.Protocol.ConsensusRightsDelay,
                 (int)BakingRightType.Baking,
                 Context.Protocol.GetCycleStart(block.Cycle + Context.Protocol.ConsensusRightsDelay));
+
+            // See ApplyNewCycle: the deleted rows may still be cached.
+            Cache.BakingRights.Reset();
         }
 
         protected virtual async Task<IEnumerable<RightsGenerator.BR>> GetCurrentBakingRights(Block block, Cycle cycle)
